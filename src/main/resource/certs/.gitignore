@@ -1,0 +1,6 @@
+*.jks  
+*.pem  
+*.p12
+*.crt
+*.ca
+*.key
