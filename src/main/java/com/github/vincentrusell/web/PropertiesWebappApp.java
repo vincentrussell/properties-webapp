@@ -1,7 +1,10 @@
 package com.github.vincentrusell.web;
 
+import com.github.vincentrusell.web.conditional.ConditionalOnSystemProperty;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
+import org.apache.catalina.Host;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -24,12 +27,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
@@ -40,6 +38,9 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 @Import(ServerConfiguration.class)
 public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
+    @Autowired
+    UserDetailsService userDetailsService;
+
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -49,10 +50,9 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
                 .build();
     }
 
-
-
-    @Bean
-    public UserDetailsService userDetailsService() {
+    @Bean(name="userDetailsService")
+    @ConditionalOnSystemProperty(name = "https.authorized.dns")
+    public UserDetailsService authorizedDnsUserDetailsService() {
         final Set<String> authorizedDns = Sets.newHashSet(Splitter.on(",,")
                 .split(firstNonNull(System.getProperty("https.authorized.dns"), "")));
         return new UserDetailsService() {
@@ -66,6 +66,32 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
                 throw new UsernameNotFoundException("User not found!");
             }
         };
+    }
+
+    @Bean(name="userDetailsService")
+    @ConditionalOnSystemProperty(name = "https.authorized.hostnames")
+    public UserDetailsService authorizedHostnamesUserDetailsService() {
+        final Set<String> authorizedHostnames = Sets.newHashSet(Splitter.on(",")
+                .split(firstNonNull(System.getProperty("https.authorized.hostnames"), "")));
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String hostname) {
+                if (authorizedHostnames.contains(hostname)) {
+                    return new User(hostname, "",
+                            AuthorityUtils
+                                    .commaSeparatedStringToAuthorityList("ROLE_USER"));
+                }
+                throw new UsernameNotFoundException("User not found!");
+            }
+        };
+    }
+
+
+
+    @Bean
+    @Override
+    public UserDetailsService userDetailsService() {
+        return userDetailsService;
     }
 
 
@@ -86,7 +112,12 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
                     .and()
                     .x509()
                     .subjectPrincipalRegex("(.*)?+")
-                    .userDetailsService(userDetailsService());
+                    .userDetailsService(userDetailsService);
+        } else if (System.getProperty("https.authorized.hostnames") != null) {
+            http.authorizeRequests().anyRequest().authenticated()
+                    .and()
+                    .apply(new HostnameConfigurer<>())
+                    .userDetailsService(userDetailsService);
         } else {
             http.authorizeRequests().anyRequest().permitAll();
         }
