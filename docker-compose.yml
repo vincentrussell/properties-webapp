@@ -1,0 +1,21 @@
+version: '2.2'
+services:
+  properties-webapp:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "5005:5005"
+    volumes:
+      - ./src/main/resource/certs:/certs:rw
+    environment:
+      server.port: 8080
+      server.https.port: 8443
+      https.authorized.dns: CN=server,,CN=user1,,CN=user2,,CN=i have spaces
+      javax.net.ssl.keyStore: /certs/server.jks
+      javax.net.ssl.keyStorePassword: password
+      javax.net.ssl.trustStore: /certs/truststore.jks
+      javax.net.ssl.trustStorePassword: password
+      javax.net.ssl.clientAuth: "required"
