@@ -18,4 +18,6 @@ public @interface ConditionalOnSystemProperty {
 
 	String name() default "";
 
+	String[] absentProperties() default {};
+
 }

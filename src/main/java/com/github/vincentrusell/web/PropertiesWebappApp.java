@@ -2,8 +2,8 @@ package com.github.vincentrusell.web;
 
 import com.github.vincentrusell.web.conditional.ConditionalOnSystemProperty;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.apache.catalina.Host;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -38,7 +38,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 @Import(ServerConfiguration.class)
 public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
-    @Autowired
+    @Autowired(required = false)
     UserDetailsService userDetailsService;
 
     @Bean
@@ -86,6 +86,15 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
         };
     }
 
+    @Bean(name="userDetailsService")
+    @ConditionalOnSystemProperty(absentProperties = {"https.authorized.hostnames", "https.authorized.dns"})
+    public UserDetailsService defaultUserDetailsService() {
+        return hostname -> new User(hostname, "",
+                AuthorityUtils
+                        .commaSeparatedStringToAuthorityList("ROLE_USER"));
+    }
+
+
 
 
     @Bean
@@ -97,13 +106,15 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("index.jsp")
+                .addResourceLocations("classpath:/WEB-INF/jsp/");
+
         registry.addResourceHandler("swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");
 
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
-
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -132,8 +143,10 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
 
         final String httpPort = firstNonNull(System.getProperty("server.port"), "80");
         SpringApplication app = new SpringApplication(PropertiesWebappApp.class);
-        app.setDefaultProperties(Collections
-                .singletonMap("server.port", httpPort));
+        app.setDefaultProperties(ImmutableMap.<String,Object>builder()
+                .put("server.port", httpPort)
+                .put("spring.mvc.view.prefix", "/WEB-INF/jsp")
+                .put("spring.mvc.view.suffix", ".jsp").build());
         app.run(args);
     }
 
