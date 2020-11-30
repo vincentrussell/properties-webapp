@@ -130,7 +130,7 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
                 System.setProperty(entry.getKey().toString(), entry.getValue().toString()
                         .replaceAll("^\"|\"$", "")));
 
-        final String httpPort = firstNonNull(System.getProperty("server.port"), "8080");
+        final String httpPort = firstNonNull(System.getProperty("server.port"), "80");
         SpringApplication app = new SpringApplication(PropertiesWebappApp.class);
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", httpPort));

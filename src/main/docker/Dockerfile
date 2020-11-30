@@ -10,6 +10,9 @@ RUN chgrp 0 /start.sh && \
     chmod 0775 /start.sh && \
     cat /etc/*release*
 
+EXPOSE 80
+EXPOSE 443
+
 ENTRYPOINT ["/start.sh"]
 
 LABEL maintainer="Vincent Russell <vincent.russell@gmail.com>"

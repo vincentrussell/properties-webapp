@@ -5,14 +5,14 @@ services:
       context: .
       dockerfile: src/main/docker/Dockerfile
     ports:
-      - "8080:8080"
-      - "8443:8443"
+      - "8080:80"
+      - "8443:443"
       - "5005:5005"
     volumes:
       - ./src/main/resource/certs:/certs:rw
     environment:
-      server.port: 8080
-      server.https.port: 8443
+      server.port: 80
+      server.https.port: 443
       https.authorized.dns: CN=server,,CN=user1,,CN=user2,,CN=i have spaces
       javax.net.ssl.keyStore: /certs/server.jks
       javax.net.ssl.keyStorePassword: password

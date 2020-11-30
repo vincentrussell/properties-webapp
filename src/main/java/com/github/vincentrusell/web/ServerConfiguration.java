@@ -21,8 +21,8 @@ public class ServerConfiguration {
     @Bean
     @ConditionalOnSystemProperty(name = "javax.net.ssl.keyStore")
     public ConfigurableServletWebServerFactory webServerFactory() {
-        final int httpPort = Integer.parseInt(firstNonNull(System.getProperty("server.port"), "8080"));
-        final int httpsPort = Integer.parseInt(firstNonNull(System.getProperty("server.https.port"), "8443"));
+        final int httpPort = Integer.parseInt(firstNonNull(System.getProperty("server.port"), "80"));
+        final int httpsPort = Integer.parseInt(firstNonNull(System.getProperty("server.https.port"), "443"));
         TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
         factory.addAdditionalTomcatConnectors(createSslConnector(httpsPort));
         factory.addConnectorCustomizers(connector -> {
