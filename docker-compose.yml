@@ -9,7 +9,7 @@ services:
       - "8443:443"
       - "5005:5005"
     volumes:
-      - ./src/main/resource/certs:/certs:rw
+      - ./src/main/resources/certs:/certs:rw
     environment:
       server.port: 80
       server.https.port: 443
