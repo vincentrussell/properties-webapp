@@ -133,9 +133,7 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
                     .apply(new HostnameConfigurer<>())
                     .userDetailsService(userDetailsService);
         } else {
-            http.authorizeRequests().anyRequest().authenticated()
-                    .and()
-                    .userDetailsService(userDetailsService);
+            http.authorizeRequests().anyRequest().permitAll();
         }
     }
 
