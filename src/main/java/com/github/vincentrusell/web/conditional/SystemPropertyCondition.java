@@ -1,9 +1,8 @@
 package com.github.vincentrusell.web.conditional;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.Ordered;
@@ -38,9 +37,9 @@ class SystemPropertyCondition implements Condition {
 
 		if (absentProperties.size() > 0 && propertyKeyMatches.size() == 0) {
 			return true;
-		} else if (value !=null && name != null && value.equals(System.getProperty(name))) {
+		} else if (value !=null && !StringUtils.isEmpty(name) && value.equals(System.getProperty(name))) {
 			return true;
-		} else if (name != null && System.getProperty(name) != null) {
+		} else if (!StringUtils.isEmpty(name) && System.getProperty(name) != null) {
 			return true;
 		}
 		return false;

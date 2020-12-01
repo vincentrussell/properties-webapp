@@ -26,7 +26,6 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Collections;
 import java.util.Set;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
@@ -89,9 +88,14 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
     @Bean(name="userDetailsService")
     @ConditionalOnSystemProperty(absentProperties = {"https.authorized.hostnames", "https.authorized.dns"})
     public UserDetailsService defaultUserDetailsService() {
-        return hostname -> new User(hostname, "",
-                AuthorityUtils
-                        .commaSeparatedStringToAuthorityList("ROLE_USER"));
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+                return new User(s, "",
+                        AuthorityUtils
+                                .commaSeparatedStringToAuthorityList("ROLE_USER"));
+            }
+        };
     }
 
 
@@ -106,9 +110,6 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("index.jsp")
-                .addResourceLocations("classpath:/WEB-INF/jsp/");
-
         registry.addResourceHandler("swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");
 
@@ -118,6 +119,8 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+
         if (System.getProperty("https.authorized.dns") != null) {
             http.authorizeRequests().anyRequest().authenticated()
                     .and()
@@ -130,7 +133,9 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements
                     .apply(new HostnameConfigurer<>())
                     .userDetailsService(userDetailsService);
         } else {
-            http.authorizeRequests().anyRequest().permitAll();
+            http.authorizeRequests().anyRequest().authenticated()
+                    .and()
+                    .userDetailsService(userDetailsService);
         }
     }
 
