@@ -4,7 +4,7 @@ properties-webapp
 properties-webapp is a webapp that stores and serves properties.
 
 
-The REST API:
+# REST API
 | ENDPOINT |DESCRIPTION  |
 |--|--|
 | GET /properties/properties | get all of the properties as a JSON map |
