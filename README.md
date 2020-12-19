@@ -42,7 +42,7 @@ docker run -p 80:8000 -p 443:443 -it --rm vincentrussell/properties-webapp
 # Use
 
 ```
-docker run -d -p 80:80 -p 443:443 vincentrussell/properties-webapp
+docker run -d -p 80:80 -p 443:443 vincentrussell/properties-webapp:1.0
 ```
 
 # Environment Variable Options
