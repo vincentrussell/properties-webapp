@@ -18,7 +18,7 @@ properties-webapp is a webapp that stores and serves properties.
 # Install
 
 ```
-docker pull vincentrussell/properties-webapp
+docker pull vincentrussell/properties-webapp:1.0
 ```
 
 # Development
