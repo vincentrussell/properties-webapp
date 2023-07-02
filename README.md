@@ -47,21 +47,23 @@ docker run -d -p 80:80 -p 443:443 vincentrussell/properties-webapp:1.0
 
 # Environment Variable Options
 
-|Environment variable  | Description |
-|--|--|
-| server.port | The http (unsecured) port to use  |
-| server.https.port | The https (secured) port to use  |
-| https.authorized.dns | The Authorized Dns delimited by two commas (,,) that should acces  |
-| javax.net.ssl.keyStore | The keystore to use  |
-| javax.net.ssl.keyStorePassword | The keystore password to use  |
-| javax.net.ssl.keyStoreType | The type of keystore (JKS or PKCS12)  |
-| javax.net.ssl.trustStore | The truststore to use |
-| javax.net.ssl.trustStorePassword| The truststore password to use  |
-| javax.net.ssl.trustStoreType | The type of truststore (JKS or PKCS12)  |
-| javax.net.ssl.sslProtocol | The ssl protocol to use (TLSv1.2)  |
-| javax.net.ssl.keyAlias | The alias in the keystore to use  |
-| javax.net.ssl.clientAuth | The tomcat client auth to use.  (optional, required, false, etc.)  |
-| properties.file | The persistent properties file to store the properties. (saved to every 45 seconds)  |
+| Environment variable             | Description                                                                         |
+|----------------------------------|-------------------------------------------------------------------------------------|
+| server.port                      | The http (unsecured) port to use                                                    |
+| server.https.port                | The https (secured) port to use                                                     |
+| https.authorized.dns             | The Authorized Dns delimited by two commas (,,) that should acces                   |
+| javax.net.ssl.keyStore           | The keystore to use                                                                 |
+| javax.net.ssl.keyStorePassword   | The keystore password to use                                                        |
+| javax.net.ssl.keyStoreType       | The type of keystore (JKS or PKCS12)                                                |
+| javax.net.ssl.trustStore         | The truststore to use                                                               |
+| javax.net.ssl.trustStorePassword | The truststore password to use                                                      |
+| javax.net.ssl.trustStoreType     | The type of truststore (JKS or PKCS12)                                              |
+| javax.net.ssl.sslProtocol        | The ssl protocol to use (TLSv1.2)                                                   |
+| javax.net.ssl.keyAlias           | The alias in the keystore to use                                                    |
+| javax.net.ssl.clientAuth         | The tomcat client auth to use.  (optional, required, false, etc.)                   |
+| properties.file                  | The persistent properties file to store the properties. (saved to every 45 seconds) |
+| swagger.host                     | The host that swagger should use.  (Useful when using a proxy for this app)         |
+
 
 
 

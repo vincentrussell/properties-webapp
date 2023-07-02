@@ -1,14 +1,25 @@
 package com.github.vincentrusell.web;
 
 import com.github.vincentrusell.web.conditional.ConditionalOnSystemProperty;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.File;
+import java.util.Set;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.apache.commons.lang3.Validate.isTrue;
@@ -16,7 +27,75 @@ import static org.apache.commons.lang3.Validate.notNull;
 
 
 @Configuration
-public class ServerConfiguration {
+public class ServerConfiguration implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
+
+
+    @Override
+    public void addViewControllers(final ViewControllerRegistry registry) {
+        registry.addRedirectViewController("/", "/swagger-ui.html");
+        registry.addRedirectViewController("/swagger-ui", "/swagger-ui.html");
+    }
+
+
+    @Bean(name="userDetailsService")
+    @ConditionalOnSystemProperty(name = "https.authorized.dns")
+    public UserDetailsService authorizedDnsUserDetailsService() {
+        final Set<String> authorizedDns = Sets.newHashSet(Splitter.on(",,")
+                .split(firstNonNull(System.getProperty("https.authorized.dns"), "")));
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String dn) {
+                if (authorizedDns.contains(dn)) {
+                    return new User(dn, "",
+                            AuthorityUtils
+                                    .commaSeparatedStringToAuthorityList("ROLE_USER"));
+                }
+                throw new UsernameNotFoundException("User not found!");
+            }
+        };
+    }
+
+    @Bean(name="userDetailsService")
+    @ConditionalOnSystemProperty(name = "https.authorized.hostnames")
+    public UserDetailsService authorizedHostnamesUserDetailsService() {
+        final Set<String> authorizedHostnames = Sets.newHashSet(Splitter.on(",")
+                .split(firstNonNull(System.getProperty("https.authorized.hostnames"), "")));
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String hostname) {
+                if (authorizedHostnames.contains(hostname)) {
+                    return new User(hostname, "",
+                            AuthorityUtils
+                                    .commaSeparatedStringToAuthorityList("ROLE_USER"));
+                }
+                throw new UsernameNotFoundException("User not found!");
+            }
+        };
+    }
+
+    @Bean(name="userDetailsService")
+    @ConditionalOnSystemProperty(absentProperties = {"https.authorized.hostnames", "https.authorized.dns"})
+    public UserDetailsService defaultUserDetailsService() {
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+                return new User(s, "",
+                        AuthorityUtils
+                                .commaSeparatedStringToAuthorityList("ROLE_USER"));
+            }
+        };
+    }
+
+
 
     @Bean
     @ConditionalOnSystemProperty(name = "javax.net.ssl.keyStore")

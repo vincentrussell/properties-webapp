@@ -1,9 +1,7 @@
 package com.github.vincentrusell.web;
 
-import com.github.vincentrusell.web.conditional.ConditionalOnSystemProperty;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,21 +10,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.Set;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
@@ -35,87 +25,29 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 @EnableWebMvc
 @EnableWebSecurity
 @Import(ServerConfiguration.class)
-public class PropertiesWebappApp extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
+public class PropertiesWebappApp extends WebSecurityConfigurerAdapter {
 
     @Autowired(required = false)
     UserDetailsService userDetailsService;
 
     @Bean
     public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
+        Docket docket = new Docket(DocumentationType.SWAGGER_2);
+
+        String swaggerHost = System.getProperty("swagger.host");
+
+        if (StringUtils.isNotEmpty(swaggerHost)) {
+            docket.host(swaggerHost);
+        }
+
+        return docket
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
                 .build();
     }
 
-    @Bean(name="userDetailsService")
-    @ConditionalOnSystemProperty(name = "https.authorized.dns")
-    public UserDetailsService authorizedDnsUserDetailsService() {
-        final Set<String> authorizedDns = Sets.newHashSet(Splitter.on(",,")
-                .split(firstNonNull(System.getProperty("https.authorized.dns"), "")));
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String dn) {
-                if (authorizedDns.contains(dn)) {
-                    return new User(dn, "",
-                            AuthorityUtils
-                                    .commaSeparatedStringToAuthorityList("ROLE_USER"));
-                }
-                throw new UsernameNotFoundException("User not found!");
-            }
-        };
-    }
 
-    @Bean(name="userDetailsService")
-    @ConditionalOnSystemProperty(name = "https.authorized.hostnames")
-    public UserDetailsService authorizedHostnamesUserDetailsService() {
-        final Set<String> authorizedHostnames = Sets.newHashSet(Splitter.on(",")
-                .split(firstNonNull(System.getProperty("https.authorized.hostnames"), "")));
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String hostname) {
-                if (authorizedHostnames.contains(hostname)) {
-                    return new User(hostname, "",
-                            AuthorityUtils
-                                    .commaSeparatedStringToAuthorityList("ROLE_USER"));
-                }
-                throw new UsernameNotFoundException("User not found!");
-            }
-        };
-    }
-
-    @Bean(name="userDetailsService")
-    @ConditionalOnSystemProperty(absentProperties = {"https.authorized.hostnames", "https.authorized.dns"})
-    public UserDetailsService defaultUserDetailsService() {
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-                return new User(s, "",
-                        AuthorityUtils
-                                .commaSeparatedStringToAuthorityList("ROLE_USER"));
-            }
-        };
-    }
-
-
-
-
-    @Bean
-    @Override
-    public UserDetailsService userDetailsService() {
-        return userDetailsService;
-    }
-
-
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html")
-                .addResourceLocations("classpath:/META-INF/resources/");
-
-        registry.addResourceHandler("/webjars/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
-    }
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
