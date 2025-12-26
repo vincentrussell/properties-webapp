@@ -13,9 +13,13 @@ services:
     environment:
       server.port: 80
       server.https.port: 443
-      https.authorized.dns: CN=server,,CN=user1,,CN=user2,,CN=i have spaces
+      #https.authorized.dns: CN=server,,CN=user1,,CN=user2,,CN=i have spaces
       javax.net.ssl.keyStore: /certs/server.jks
       javax.net.ssl.keyStorePassword: password
       javax.net.ssl.trustStore: /certs/truststore.jks
       javax.net.ssl.trustStorePassword: password
       javax.net.ssl.clientAuth: "required"
+      "javax.net.ssl.keyAlias": "server"
+      "javax.net.ssl.keyPassword": "password"
+      "properties.file": /tmp/properties.properties
+      "secrets.file": /tmp/secrets.properties

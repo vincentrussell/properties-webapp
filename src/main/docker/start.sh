@@ -15,12 +15,7 @@ do
       echo ""
     else
       if [[ ! -z $envvar_value ]]; then
-        if [[ "$envvar_value" =~ \ |\' ]]; then
-            j_opt="-D$envvar_key=\"$envvar_value\""
-        else
-            j_opt="-D$envvar_key=$envvar_value"
-        fi
-        j_opts+=("${j_opt}")
+            export envvar_key=$envvar_value
       fi
     fi
 done < <(env)

@@ -1,5 +1,5 @@
 # Alpine Linux with OpenJDK JRE
-FROM openjdk:16-jdk-alpine3.12
+FROM azul/zulu-openjdk-alpine:17-jre-headless-latest
 # copy JAR into image
 COPY ./target/properties-webapp-1.0-SNAPSHOT.jar /app.jar
 # run application with this command line

@@ -33,10 +33,10 @@ public class PropertiesController {
 
     @PostConstruct
     private void init() throws IOException {
-        String propertiesFileString = System.getProperty("properties.file");
+        String propertiesFileLocation = System.getProperty("properties.file");
 
-        if (propertiesFileString != null) {
-            propertiesFile = new File(propertiesFileString);
+        if (propertiesFileLocation != null) {
+            propertiesFile = new File(propertiesFileLocation);
             if (!propertiesFile.exists()) {
                 propertiesFile.createNewFile();
             }
@@ -56,7 +56,7 @@ public class PropertiesController {
     private void saveFile()  {
         synchronized (propertiesFile) {
             try (FileOutputStream fileOutputStream = new FileOutputStream(propertiesFile)) {
-                properties.store(fileOutputStream, "properties-webapp save file");
+                properties.store(fileOutputStream, "properties-webapp properties save file");
             } catch (IOException e) {
                 e.printStackTrace();
             }

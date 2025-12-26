@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -93,6 +94,35 @@ public class ServerConfiguration implements WebMvcConfigurer {
                                 .commaSeparatedStringToAuthorityList("ROLE_USER"));
             }
         };
+    }
+
+    @Bean
+    PropertiesController propertiesController() {
+        return new PropertiesController();
+    }
+
+    @Bean
+    @ConditionalOnSystemProperty(name = "javax.net.ssl.keyStore")
+    SecretsManager secretsManager() throws Exception {
+        String keyStore = System.getProperty("javax.net.ssl.keyStore");
+        String keystorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+        String keyPassword = firstNonNull(System.getProperty("javax.net.ssl.keyPassword"),
+                System.getProperty("javax.net.ssl.keyStorePassword"));
+        String keyAlias = System.getProperty("javax.net.ssl.keyAlias");
+        String keystoreType = firstNonNull(System.getProperty("javax.net.ssl.keyStoreType"), "JKS");
+
+        notNull(keyStore, "javax.net.ssl.keyStore property is not set");
+        notNull(keystorePassword, "javax.net.ssl.keyStorePassword property is not set");
+        notNull(keyPassword, "javax.net.ssl.keyPassword property is not set");
+        notNull(keyAlias, "javax.net.ssl.keyAlias property is not set");
+
+        return new SecretsManager(keyStore, keystorePassword, keystoreType, keyPassword, keyAlias);
+    }
+
+    @Bean
+    @ConditionalOnBean(SecretsManager.class)
+    SecretsController secretsController(final SecretsManager secretsManager) {
+        return new SecretsController(secretsManager);
     }
 
 

@@ -4,8 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.AutoConfigurationExcludeFilter;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,13 +22,16 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.function.BiConsumer;
+
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
-@SpringBootApplication
+@SpringBootApplication()
 @EnableSwagger2
 @EnableWebMvc
 @EnableWebSecurity
 @Import(ServerConfiguration.class)
+@ComponentScan(basePackages = { "none.dont.scan.anything"})
 public class PropertiesWebappApp extends WebSecurityConfigurerAdapter {
 
     @Autowired(required = false)
@@ -71,6 +78,12 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter {
 
 
     public static void main(String[] args) {
+        System.getenv().forEach((s, s2) -> {
+            System.out.println(
+                    String.format("setting system property from environment variable key=%s,value=%s", s, s2));
+            System.setProperty(s, s2);
+        });
+
         //remove surrounding quotes from properties...this will cause errors downstream
         System.getProperties().entrySet().forEach(entry ->
                 System.setProperty(entry.getKey().toString(), entry.getValue().toString()
