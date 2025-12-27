@@ -73,6 +73,7 @@ docker run -d -p 80:80 -p 443:443 vincentrussell/properties-webapp:2.0
 | javax.net.ssl.keyAlias           | The alias in the keystore to use                                                    |
 | javax.net.ssl.clientAuth         | The tomcat client auth to use.  (optional, required, false, etc.)                   |
 | properties.file                  | The persistent properties file to store the properties. (saved to every 45 seconds) |
+| secrets.file                     | The persistent properties file to store the secrets. (saved to every 45 seconds)    |
 | swagger.host                     | The host that swagger should use.  (Useful when using a proxy for this app)         |
 
 
