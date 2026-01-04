@@ -22,6 +22,8 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.io.FileInputStream;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
@@ -83,6 +85,16 @@ public class PropertiesWebappApp extends WebSecurityConfigurerAdapter {
                     String.format("setting system property from environment variable key=%s,value=%s", s, s2));
             System.setProperty(s, s2);
         });
+
+        if (System.getProperty("system.properties.file") != null) {
+            try (FileInputStream fileInputStream = new FileInputStream(System.getProperty("system.properties.file"))) {
+                Properties systemPropertiesFromFile = new Properties();
+                systemPropertiesFromFile.load(fileInputStream);
+                System.getProperties().putAll(systemPropertiesFromFile);
+            } catch (Throwable t) {
+                throw new IllegalArgumentException(t);
+            }
+        }
 
         //remove surrounding quotes from properties...this will cause errors downstream
         System.getProperties().entrySet().forEach(entry ->

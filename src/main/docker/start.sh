@@ -9,16 +9,19 @@ declare -a j_opts
 
 j_opts+=("-Dspring.profiles.active=default")
 
+rm -f /system.properties
 while IFS='=' read -r envvar_key envvar_value
 do
     if [[ " ${java_default_props[@]} " =~ "${envvar_key}" ]]; then
       echo ""
     else
       if [[ ! -z $envvar_value ]]; then
-            export envvar_key=$envvar_value
+            echo "${envvar_key}=${envvar_value}" >> /system.properties
       fi
     fi
 done < <(env)
+
+j_opts+=("-Dsystem.properties.file=/system.properties")
 
 echo "------------------------------"
 echo "${j_opts[@]}"
